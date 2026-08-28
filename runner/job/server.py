@@ -45,7 +45,7 @@ def execute(code):
    validate(code)
    if driver is None:browser()
    out=io.StringIO();err=io.StringIO()
-   safe={'__builtins__':{'len':len,'range':range,'str':str,'int':int,'float':float,'bool':bool,'print':print,'min':min,'max':max,'enumerate':enumerate,'list':list},'webdriver':webdriver,'By':By,'WebDriverWait':WebDriverWait,'EC':EC,'time':time,'driver':driver,'__import__':safe_import}
+   safe={'__builtins__':{'len':len,'range':range,'str':str,'int':int,'float':float,'bool':bool,'print':print,'min':min,'max':max,'enumerate':enumerate,'list':list,'__import__':safe_import},'webdriver':webdriver,'By':By,'WebDriverWait':WebDriverWait,'EC':EC,'time':time,'driver':driver}
    with contextlib.redirect_stdout(out),contextlib.redirect_stderr(err):exec(compile(ast.parse(code),'student_code.py','exec'),safe,{})
    state['logs']='\n'.join(x for x in ['Automação executada.','',out.getvalue().strip(), ''] if x) or 'Automação concluída.'
    state['status']='done'

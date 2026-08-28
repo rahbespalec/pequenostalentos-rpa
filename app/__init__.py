@@ -218,7 +218,12 @@ def create_session():
     }
 
     try:
-        resp = requests.post(f'{RUNNER_URL}/sessions', headers=_runner_headers(), timeout=(5, 15))
+        resp = requests.post(
+            f'{RUNNER_URL}/sessions',
+            json={'url': _challenge_url(mission['id'])},
+            headers=_runner_headers(),
+            timeout=(5, 15),
+        )
         payload = resp.json()
         if resp.status_code >= 400:
             raise RuntimeError(payload.get('error', 'Não foi possível iniciar o ambiente.'))

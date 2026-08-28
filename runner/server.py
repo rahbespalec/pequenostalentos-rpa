@@ -37,6 +37,8 @@ def create():
   with lock:
     active=len(jobs)
   if active>=MAX:return jsonify(error='Todos os ambientes estão ocupados. Tente novamente em alguns segundos.'),429
+  data=request.get_json(silent=True) or {}
+  url=data.get('url')
   sid=uuid.uuid4().hex[:12]; cname='rpa-job-'+sid
   cmd=['docker','run','-d','--name',cname,'--network',NETWORK,'--cpus',CPU,'--memory',MEM,'--pids-limit','180','--read-only','--tmpfs','/tmp:rw,nosuid,nodev','--tmpfs','/run:rw,nosuid,nodev','--tmpfs','/root:rw,nosuid,nodev',IMAGE]
   p=subprocess.run(cmd,capture_output=True,text=True)
@@ -45,7 +47,11 @@ def create():
   for _ in range(40):
     try:
       r=requests.get(f'http://{cname}:9000/health',timeout=1)
-      if r.ok:return jsonify(id=sid)
+      if r.ok:
+        if url:
+          try:requests.post(f'http://{cname}:9000/run',json={'code':f'driver.get({url!r})'},timeout=3)
+          except Exception:pass
+        return jsonify(id=sid)
     except Exception:pass
     time.sleep(.25)
   remove(sid);return jsonify(error='O navegador demorou demais para iniciar.'),504
