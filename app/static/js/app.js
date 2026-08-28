@@ -119,6 +119,9 @@ async function createSession(missionId){
     });
     const data = await response.json();
     if (!response.ok) throw Error(data.error || 'Não foi possível criar o ambiente.');
+    if (data.status !== 'ready') {
+      throw Error(data.error || data.logs || 'Ambiente indisponível no momento. Tente novamente em instantes.');
+    }
 
     sessionByMission[missionId] = data.id;
     log('Ambiente virtual pronto.');
@@ -264,3 +267,11 @@ function showNextMissionToast(nextId){
   setTimeout(() => el.remove(), 4000);
 }
 document.getElementById('run').addEventListener('click', run);
+
+window.addEventListener('pagehide', () => {
+  Object.values(sessionByMission).forEach((sid) => {
+    try {
+      fetch(`/api/session/${sid}`, { method: 'DELETE', keepalive: true });
+    } catch (error) {}
+  });
+});
