@@ -1,8 +1,3 @@
-# Troque pelo seu domínio antes de publicar.
-# Ex.: rpa.seudominio.com {
-#   reverse_proxy web:5000
-# }
-
-:80 {
+pequenostalentos-rpa.northcentralus.cloudapp.azure.com {
   reverse_proxy web:5000
 }

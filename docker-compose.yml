@@ -9,7 +9,7 @@ services:
       JOB_TTL: ${JOB_TTL:-900}
       MAX_CODE_CHARS: ${MAX_CODE_CHARS:-8000}
     ports:
-      - "8080:5000"
+      - "127.0.0.1:8080:5000"
     depends_on:
       - runner
     networks: [rpa]
@@ -30,6 +30,24 @@ services:
     networks: [rpa]
     restart: unless-stopped
 
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+    networks: [rpa]
+    restart: unless-stopped
+
 networks:
   rpa:
     name: rpa_lab_network
+
+volumes:
+  caddy_data:
+  caddy_config:
