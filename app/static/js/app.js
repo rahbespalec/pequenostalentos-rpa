@@ -1,4 +1,4 @@
-let editor, pollTimer, currentMissionId = 'mission-01';
+let editor, pollTimer, currentMissionId = 'mission-01', currentScreenshotUrl = null;
 const sessionByMission = {};
 const missionList = Array.isArray(window.MISSION_STARTERS) ? window.MISSION_STARTERS : [];
 const missionMap = Object.fromEntries(missionList.map((mission) => [mission.id, mission]));
@@ -7,22 +7,45 @@ function getMissionById(missionId) {
   return missionMap[missionId] || missionList[0];
 }
 
-function refreshSessionPreview(sid) {
+async function refreshSessionPreview(sid) {
   const preview = document.getElementById('missionPreview');
   const screen = document.getElementById('screen');
   const screenEmpty = document.getElementById('screenEmpty');
-  const timestamp = Date.now();
-  const url = `/api/session/${sid}/screenshot?x=${timestamp}`;
+  const url = `/api/session/${sid}/screenshot?x=${Date.now()}`;
 
-  if (preview) {
-    preview.src = url;
-    preview.style.display = 'block';
+  try {
+    const response = await fetch(url, { cache: 'no-store' });
+    if (!response.ok) return false;
+    const blob = await response.blob();
+    if (!blob.size) return false;
+
+    const objectUrl = URL.createObjectURL(blob);
+    const previousUrl = currentScreenshotUrl;
+    currentScreenshotUrl = objectUrl;
+
+    if (preview) {
+      preview.src = objectUrl;
+      preview.style.display = 'block';
+    }
+
+    if (screen && screenEmpty) {
+      screen.src = objectUrl;
+      screen.style.display = 'block';
+      screenEmpty.style.display = 'none';
+    }
+
+    if (previousUrl) URL.revokeObjectURL(previousUrl);
+    return true;
+  } catch (error) {
+    return false;
   }
+}
 
-  if (screen && screenEmpty) {
-    screen.src = url;
-    screen.style.display = 'block';
-    screenEmpty.style.display = 'none';
+async function warmUpPreview(sid) {
+  for (let i = 0; i < 10; i++) {
+    const loaded = await refreshSessionPreview(sid);
+    if (loaded) return;
+    await new Promise((resolve) => setTimeout(resolve, 500));
   }
 }
 
@@ -67,8 +90,8 @@ function applyMission(missionId) {
     editor.setValue(mission.starter);
   }
 
-  ensureSessionForMission(mission.id).then((sid) => {
-    refreshSessionPreview(sid);
+  ensureSessionForMission(mission.id).then(async (sid) => {
+    await warmUpPreview(sid);
     ensurePollingForMission(mission.id);
   }).catch(() => {});
 }

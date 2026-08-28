@@ -58,11 +58,6 @@ driver.get("{_challenge_url('mission-01')}")
 # 1. Encontre o campo de nome
 # 2. Digite seu nome
 # 3. Clique em Cadastrar
-
-# Dica:
-# campo = driver.find_element(By.ID, "nome")
-# campo.send_keys("Seu Nome")
-# driver.find_element(By.ID, "cadastrar").click()
 '''
 
 MISSIONS = [
@@ -93,10 +88,6 @@ driver.get("{_challenge_url('mission-02')}")
 # 1. Localize o select de canal
 # 2. Escolha "email"
 # 3. Clique em continuar
-# Dica:
-# select = Select(driver.find_element(By.ID, "canal"))
-# select.select_by_value("email")
-# driver.find_element(By.ID, "continuar").click()
 ''',
     },
     {
@@ -115,10 +106,6 @@ driver.get("{_challenge_url('mission-03')}")
 # 1. Marque a opção de notificações
 # 2. Selecione o perfil "profissional"
 # 3. Clique em salvar preferências
-# Dica:
-# driver.find_element(By.ID, "notificacoes").click()
-# driver.find_element(By.ID, "perfil-profissional").click()
-# driver.find_element(By.ID, "salvar-preferencias").click()
 ''',
     },
     {
@@ -140,12 +127,6 @@ driver.get("{_challenge_url('mission-04')}")
 # 3. Escolha a prioridade "alta"
 # 4. Escreva uma observação
 # 5. Clique em concluir cadastro
-# Dica:
-# Select(driver.find_element(By.ID, "setor")).select_by_value("tecnologia")
-# driver.find_element(By.ID, "relatorios").click()
-# driver.find_element(By.ID, "prioridade-alta").click()
-# driver.find_element(By.ID, "observacoes").send_keys("Tudo ok")
-# driver.find_element(By.ID, "concluir").click()
 ''',
     },
 ]
