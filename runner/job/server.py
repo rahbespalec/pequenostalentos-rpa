@@ -1,4 +1,4 @@
-import ast, io, os, time, threading, traceback, contextlib
+import ast, io, time, threading, traceback, contextlib
 from flask import Flask, jsonify, Response, request
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -14,7 +14,9 @@ MAX_CODE=8000
 
 def browser():
  global driver
- opts=webdriver.ChromeOptions();opts.add_argument('--no-sandbox');opts.add_argument('--disable-dev-shm-usage');opts.add_argument('--window-size=1100,680');opts.add_argument('--disable-gpu');opts.add_argument('--disable-notifications');opts.add_argument('--no-first-run');opts.add_argument('--no-default-browser-check');opts.add_argument('--disable-popup-blocking')
+ opts=webdriver.ChromeOptions()
+ for flag in ('--headless=new','--no-sandbox','--disable-dev-shm-usage','--window-size=1100,680','--disable-gpu','--disable-notifications','--no-first-run','--no-default-browser-check','--disable-popup-blocking','--disable-extensions','--disable-background-networking','--disable-sync','--disable-translate','--disable-default-apps','--mute-audio','--renderer-process-limit=1'):
+  opts.add_argument(flag)
  driver=webdriver.Chrome(options=opts);driver.set_page_load_timeout(15)
 
 def safe_import(name,globals=None,locals=None,fromlist=(),level=0):
@@ -70,8 +72,5 @@ def run():
  threading.Thread(target=execute,args=(code,),daemon=True).start()
  return jsonify(ok=True,message='Seu código foi enviado ao robô.')
 
-os.environ['DISPLAY']=':99'
-threading.Thread(target=lambda: (os.system('Xvfb :99 -screen 0 1100x680x24 >/tmp/xvfb.log 2>&1 &'),os.system('fluxbox >/tmp/fluxbox.log 2>&1 &')),daemon=True).start()
-time.sleep(1)
 browser()
 app.run(host='0.0.0.0',port=9000,threaded=True)

@@ -146,7 +146,7 @@ function ensurePollingForMission(missionId){
     const sid = sessionByMission[missionId];
     if (!sid) return;
     refreshSessionPreview(sid);
-  }, 1200);
+  }, 2000);
 }
 
 function setStatus(text, state){
