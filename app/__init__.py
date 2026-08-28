@@ -1,26 +1,26 @@
 import os
 import secrets
-import shutil
 import threading
 import time
-import traceback
 import uuid
 
+import requests
 from flask import Flask, Response, jsonify, render_template, request
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options as ChromeOptions
-from selenium.webdriver.common.by import By
-from selenium.webdriver.edge.options import Options as EdgeOptions
-from selenium.webdriver.support.ui import WebDriverWait
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', secrets.token_hex(32))
 MAX_CODE = int(os.getenv('MAX_CODE_CHARS', '8000'))
 SESSION_TIMEOUT = int(os.getenv('SESSION_TIMEOUT', '3600'))
 PORT = int(os.getenv('PORT', '5000'))
-BASE_URL = f'http://127.0.0.1:{PORT}'
+BASE_URL = os.getenv('INTERNAL_BASE_URL', f'http://web:{PORT}')
+RUNNER_URL = os.getenv('RUNNER_URL', 'http://runner:7000')
+RUNNER_TOKEN = os.getenv('RUNNER_TOKEN', 'dev-runner-token')
 SESSIONS = {}
 SESSIONS_LOCK = threading.Lock()
+
+
+def _runner_headers():
+    return {'X-Runner-Token': RUNNER_TOKEN}
 
 
 def _challenge_url(mission_id=None):
@@ -151,86 +151,6 @@ driver.get("{_challenge_url('mission-04')}")
 ]
 
 
-def _browser_candidates():
-    seen = set()
-    candidates = []
-    for value in [
-        os.getenv('BROWSER_PATH'),
-        shutil.which('google-chrome'),
-        shutil.which('chrome'),
-        shutil.which('chromium'),
-        shutil.which('chromium-browser'),
-        shutil.which('msedge'),
-        shutil.which('microsoft-edge'),
-        r'C:\Program Files\Google\Chrome\Application\chrome.exe',
-        r'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe',
-        r'C:\Program Files\Microsoft\Edge\Application\msedge.exe',
-        r'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe',
-    ]:
-        if value and value not in seen:
-            seen.add(value)
-            candidates.append(value)
-    return candidates
-
-
-def _make_chrome_options(browser_path=None):
-    options = ChromeOptions()
-    if browser_path:
-        options.binary_location = browser_path
-    options.add_argument('--headless=new')
-    options.add_argument('--window-size=1280,720')
-    options.add_argument('--disable-gpu')
-    options.add_argument('--no-sandbox')
-    options.add_argument('--disable-dev-shm-usage')
-    options.add_argument('--disable-software-rasterizer')
-    return options
-
-
-def _make_edge_options(browser_path=None):
-    options = EdgeOptions()
-    if browser_path:
-        options.binary_location = browser_path
-    options.add_argument('--headless=new')
-    options.add_argument('--window-size=1280,720')
-    options.add_argument('--disable-gpu')
-    options.add_argument('--no-sandbox')
-    options.add_argument('--disable-dev-shm-usage')
-    options.add_argument('--disable-software-rasterizer')
-    return options
-
-
-def _create_driver():
-    if app.config.get('TESTING'):
-        return None
-
-    last_error = None
-    for factory, builder in [
-        (webdriver.Chrome, _make_chrome_options),
-        (webdriver.Edge, _make_edge_options),
-    ]:
-        for browser_path in _browser_candidates():
-            try:
-                if browser_path and 'edge' in browser_path.lower() and factory is webdriver.Chrome:
-                    continue
-                if browser_path and 'chrome' not in browser_path.lower() and 'edge' not in browser_path.lower() and factory is webdriver.Edge:
-                    continue
-                driver = factory(options=builder(browser_path))
-                driver.set_window_size(1280, 720)
-                return driver
-            except Exception as exc:
-                last_error = exc
-    raise RuntimeError(f'Nenhum navegador Chrome/Edge foi encontrado no computador. Instale Chrome ou Edge para rodar a automação. Detalhe: {last_error}')
-
-
-def _capture_screenshot(driver):
-    if driver is None:
-        return None
-    try:
-        return driver.get_screenshot_as_png()
-    except Exception:
-        return None
-
-
 def _session_payload(sid, session):
     return {
         'id': sid,
@@ -241,17 +161,14 @@ def _session_payload(sid, session):
 
 
 def _close_session(sid):
-    session = SESSIONS.get(sid)
-    if not session:
-        return
-    driver = session.get('driver')
-    if driver is not None:
+    with SESSIONS_LOCK:
+        session = SESSIONS.pop(sid, None)
+    runner_id = session.get('runner_id') if session else None
+    if runner_id:
         try:
-            driver.quit()
+            requests.delete(f'{RUNNER_URL}/sessions/{runner_id}', headers=_runner_headers(), timeout=5)
         except Exception:
             pass
-    with SESSIONS_LOCK:
-        SESSIONS.pop(sid, None)
 
 
 def _cleanup_expired_sessions():
@@ -260,43 +177,6 @@ def _cleanup_expired_sessions():
         session = SESSIONS.get(sid)
         if session and now - session.get('created_at', now) > SESSION_TIMEOUT:
             _close_session(sid)
-
-
-def _execute_user_code(sid, code):
-    session = SESSIONS.get(sid)
-    if not session:
-        return
-
-    try:
-        session['status'] = 'running'
-        session['logs'] = 'Iniciando automação...\n'
-        session['error'] = ''
-
-        driver = session.get('driver')
-        if driver is None:
-            driver = _create_driver()
-            session['driver'] = driver
-
-        driver.get(_challenge_url(session.get('mission_id')))
-        session['screenshot'] = _capture_screenshot(driver)
-
-        namespace = {
-            'driver': driver,
-            'By': By,
-            'WebDriverWait': WebDriverWait,
-            'time': time,
-            'os': os,
-        }
-
-        exec(compile(code, '<user_code>', 'exec'), namespace)
-        session['status'] = 'done'
-        session['logs'] += 'Execução concluída.'
-        session['screenshot'] = _capture_screenshot(driver)
-    except Exception:
-        session['status'] = 'error'
-        session['error'] = traceback.format_exc()
-        session['logs'] += '\nErro durante a execução:\n' + session['error']
-        session['screenshot'] = _capture_screenshot(session.get('driver'))
 
 
 @app.get('/')
@@ -328,33 +208,31 @@ def create_session():
     mission_id = data.get('mission_id', 'mission-01')
     mission = next((item for item in MISSIONS if item['id'] == mission_id), MISSIONS[0])
 
-    sid = uuid.uuid4().hex[:12]
     session = {
-        'id': sid,
         'status': 'idle',
         'logs': 'Ambiente virtual pronto.',
         'error': '',
         'created_at': time.time(),
-        'driver': None,
-        'screenshot': None,
         'mission_id': mission['id'],
+        'runner_id': None,
     }
 
+    try:
+        resp = requests.post(f'{RUNNER_URL}/sessions', headers=_runner_headers(), timeout=(5, 15))
+        payload = resp.json()
+        if resp.status_code >= 400:
+            raise RuntimeError(payload.get('error', 'Não foi possível iniciar o ambiente.'))
+        session['runner_id'] = payload['id']
+        session['status'] = 'ready'
+        session['logs'] = 'Ambiente virtual pronto.'
+    except Exception as exc:
+        session['status'] = 'idle'
+        session['logs'] = str(exc)
+        session['error'] = str(exc)
+
+    sid = uuid.uuid4().hex[:12]
     with SESSIONS_LOCK:
         SESSIONS[sid] = session
-
-    if not app.config.get('TESTING'):
-        try:
-            driver = _create_driver()
-            session['driver'] = driver
-            session['status'] = 'ready'
-            session['logs'] = 'Ambiente virtual pronto.'
-            driver.get(f'http://127.0.0.1:{PORT}/desafio?mission_id={mission["id"]}')
-            session['screenshot'] = _capture_screenshot(driver)
-        except Exception as exc:
-            session['status'] = 'idle'
-            session['logs'] = str(exc)
-            session['error'] = str(exc)
 
     return jsonify(_session_payload(sid, session))
 
@@ -372,12 +250,26 @@ def run_session(sid):
     if len(code) > MAX_CODE:
         return jsonify(error=f'O código pode ter no máximo {MAX_CODE} caracteres.'), 400
 
+    runner_id = session.get('runner_id')
+    if not runner_id:
+        return jsonify(error='Ambiente virtual indisponível. Recarregue a página.'), 503
+
+    try:
+        resp = requests.post(
+            f'{RUNNER_URL}/sessions/{runner_id}/run',
+            json={'code': code},
+            headers=_runner_headers(),
+            timeout=(5, 15),
+        )
+        payload = resp.json()
+    except Exception as exc:
+        return jsonify(error=f'Falha ao conversar com o ambiente: {exc}'), 502
+
+    if resp.status_code >= 400:
+        return jsonify(payload), resp.status_code
+
     session['status'] = 'running'
-    session['logs'] = 'Iniciando automação...\n'
-    session['error'] = ''
-    session['thread'] = threading.Thread(target=_execute_user_code, args=(sid, code), daemon=True)
-    session['thread'].start()
-    return jsonify({'id': sid, 'status': 'running', 'logs': session['logs'], 'error': ''})
+    return jsonify(payload)
 
 
 @app.get('/api/session/<sid>/status')
@@ -386,11 +278,23 @@ def status(sid):
     session = SESSIONS.get(sid)
     if not session:
         return jsonify(status='expired', logs='Sessão expirada.')
-    return jsonify({
-        'status': session.get('status', 'idle'),
-        'logs': session.get('logs', ''),
-        'error': session.get('error', ''),
-    })
+
+    runner_id = session.get('runner_id')
+    if not runner_id:
+        return jsonify({
+            'status': session.get('status', 'idle'),
+            'logs': session.get('logs', ''),
+            'error': session.get('error', ''),
+        })
+
+    try:
+        resp = requests.get(f'{RUNNER_URL}/sessions/{runner_id}/status', headers=_runner_headers(), timeout=5)
+        payload = resp.json()
+    except Exception:
+        return jsonify(status='error', logs='Ambiente indisponível.')
+
+    session['status'] = payload.get('status', session.get('status'))
+    return jsonify(payload)
 
 
 @app.get('/api/session/<sid>/screenshot')
@@ -398,10 +302,20 @@ def screenshot(sid):
     session = SESSIONS.get(sid)
     if not session:
         return Response(b'', status=404)
-    image = session.get('screenshot')
-    if not image:
+
+    runner_id = session.get('runner_id')
+    if not runner_id:
         return Response(b'', status=204)
-    return Response(image, status=200, mimetype='image/png', headers={'Cache-Control': 'no-store'})
+
+    try:
+        resp = requests.get(f'{RUNNER_URL}/sessions/{runner_id}/screenshot', headers=_runner_headers(), timeout=5)
+    except Exception:
+        return Response(b'', status=503)
+
+    if resp.status_code != 200 or not resp.content:
+        return Response(b'', status=204)
+
+    return Response(resp.content, status=200, mimetype='image/jpeg', headers={'Cache-Control': 'no-store'})
 
 
 @app.delete('/api/session/<sid>')

@@ -5,14 +5,13 @@ import app as app_module
 from app import app
 
 
-def test_starter_uses_current_runtime_port(monkeypatch):
-    monkeypatch.setenv('PORT', '5050')
+def test_starter_uses_configured_internal_base_url(monkeypatch):
+    monkeypatch.setenv('INTERNAL_BASE_URL', 'http://web:5050')
     importlib.reload(app_module)
     try:
-        assert 'http://127.0.0.1:5050' in app_module.STARTER
-        assert 'http://127.0.0.1:5000' not in app_module.STARTER
+        assert 'http://web:5050' in app_module.STARTER
     finally:
-        monkeypatch.delenv('PORT', raising=False)
+        monkeypatch.delenv('INTERNAL_BASE_URL', raising=False)
         importlib.reload(app_module)
 
 
