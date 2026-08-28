@@ -1,0 +1,8 @@
+# Troque pelo seu domínio antes de publicar.
+# Ex.: rpa.seudominio.com {
+#   reverse_proxy web:5000
+# }
+
+:80 {
+  reverse_proxy web:5000
+}

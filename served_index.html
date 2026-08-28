@@ -1,0 +1,197 @@
+﻿<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Pequenos Talentos</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/loader.min.js"></script>
+</head>
+<body>
+  <div class="page-bg"></div>
+
+  <header class="topbar">
+    <div class="brand" aria-label="Pequenos Talentos">
+      <div class="brand-mark"><span class="brand-mark__core"></span></div>
+      <div class="brand-text">
+        <strong>Pequenos Talentos</strong>
+        <span>Laboratório de fases</span>
+      </div>
+    </div>
+
+    <nav class="main-nav" aria-label="Menu principal">
+      <a href="#inicio">Início</a>
+      <a href="#fases">Fases</a>
+      <a href="#laboratorio">Laboratório</a>
+      <a href="#progresso">Progresso</a>
+    </nav>
+
+    <div class="top-actions">
+      <span class="pill"><i></i> Modo local</span>
+      <button class="ghost" id="newSession" type="button">Nova jornada</button>
+    </div>
+  </header>
+
+  <main class="page-shell">
+    <section class="hero-card" id="inicio">
+      <div class="hero-copy">
+        <p class="eyebrow">Jornada de automação</p>
+        <h1>Aprenda a automatizar fazendo missões reais.</h1>
+        <p class="lead">
+          Cada fase do jogo apresenta um problema prático, com objetivo visível e passos claros.
+          Você começa na primeira missão e vai liberando o fluxo conforme entende a lógica.
+        </p>
+
+        <div class="hero-actions">
+          <a class="cta-button" href="#laboratorio">Entrar no laboratório</a>
+          <a class="secondary-button" href="#fases">Ver fases</a>
+        </div>
+
+        <div class="hero-stats">
+          <div>
+            <strong>03</strong>
+            <span>Fases</span>
+          </div>
+          <div>
+            <strong>01</strong>
+            <span>Ativa</span>
+          </div>
+          <div>
+            <strong>15m</strong>
+            <span>Tempo</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-panel" aria-hidden="true">
+        <div class="panel-glow"></div>
+        <div class="mission-window">
+          <div class="window-header">
+            <span class="window-dot dot-a"></span>
+            <span class="window-dot dot-b"></span>
+            <span class="window-dot dot-c"></span>
+          </div>
+
+          <div class="window-body">
+            <span class="game-label" id="currentMissionTag">MISSÃO 01</span>
+            <h2 id="currentMissionTitle">Cadastro</h2>
+            <p id="currentMissionSummary">Encontre o campo, preencha o nome e confirme a ação principal.</p>
+
+            <div class="progress-block">
+              <div class="progress-meta">
+                <span>Progresso</span>
+                <strong id="currentMissionProgress">32%</strong>
+              </div>
+              <div class="progress-bar">
+                <span id="currentMissionBar"></span>
+              </div>
+            </div>
+
+            <ul class="task-list" id="currentMissionTasks">
+              <li class="done">Localizar o campo</li>
+              <li class="done">Preencher o nome</li>
+              <li>Confirmar a ação</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="phase-strip" id="fases">
+      
+      <button class="phase-card phase-card--active" type="button" data-mission-id="mission-01">
+        <span class="phase-step">Fase 01</span>
+        <h3>Cadastro</h3>
+        <p>Encontre o campo, preencha o nome e confirme a ação principal.</p>
+      </button>
+      
+      <button class="phase-card " type="button" data-mission-id="mission-02">
+        <span class="phase-step">Fase 02</span>
+        <h3>Busca</h3>
+        <p>Explique o objetivo e encontre o elemento certo para continuar a jornada.</p>
+      </button>
+      
+      <button class="phase-card " type="button" data-mission-id="mission-03">
+        <span class="phase-step">Fase 03</span>
+        <h3>Fluxo</h3>
+        <p>Combine passos em sequência para concluir um fluxo completo e estável.</p>
+      </button>
+      
+    </section>
+
+    <section class="workspace" id="laboratorio">
+      <div class="panel editor-panel">
+        <div class="panel-head">
+          <div class="panel-title-wrap">
+            <span class="dot python"></span>
+            <b>Editor de código</b>
+          </div>
+          <span class="hint">Python + Selenium</span>
+        </div>
+
+        <div id="editor"></div>
+
+        <div class="editor-foot">
+          <span>Use find_element, send_keys e click.</span>
+          <button class="run" id="run" type="button">Executar</button>
+        </div>
+      </div>
+
+      <div class="panel browser-panel">
+        <div class="panel-head">
+          <div class="panel-title-wrap">
+            <span class="dot browser"></span>
+            <b>Janela do robô</b>
+          </div>
+          <span id="status" class="status idle">Pronto</span>
+        </div>
+
+        <div class="browser-shell">
+          <div class="browser-bar">
+            <span class="traffic"><i></i><i></i><i></i></span>
+            <span class="address">lab.local / desafio</span>
+          </div>
+
+          <div class="screen-wrap">
+            <img id="screen" alt="Tela do robô">
+            <div id="screenEmpty" class="screen-empty">
+              <div class="bigbot">R</div>
+              <b>O robô aparece aqui</b>
+              <span>Execute o código para iniciar.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="console">
+          <div class="console-title">Console</div>
+          <pre id="logs">Aguardando a primeira automação.</pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="progress-panel" id="progresso">
+      <div class="progress-copy">
+        <p class="eyebrow">Progresso</p>
+        <h2>Estratégia em etapas</h2>
+      </div>
+
+      <div class="progress-steps">
+        <div class="step-item active"><span>01</span><strong>Explorar</strong></div>
+        <div class="step-item"><span>02</span><strong>Testar</strong></div>
+        <div class="step-item"><span>03</span><strong>Avançar</strong></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span>Pequenos Talentos</span>
+    <strong>Aprender fazendo</strong>
+  </footer>
+
+  <script>
+    window.STARTER = "# Sua primeira automa\u00e7\u00e3o\n# O navegador virtual j\u00e1 est\u00e1 pronto.\n\nfrom selenium.webdriver.common.by import By\n\ndriver.get(\"http://127.0.0.1:5000/desafio\")\n\n# 1. Encontre o campo de nome\n# 2. Digite seu nome\n# 3. Clique em Cadastrar\n\n# Dica:\n# campo = driver.find_element(By.ID, \"nome\")\n# campo.send_keys(\"Seu Nome\")\n# driver.find_element(By.ID, \"cadastrar\").click()\n";
+    window.MISSION_STARTERS = [{"description": "Primeiro contato com o desafio: identificar o campo e validar o fluxo de cadastro.", "id": "mission-01", "number": "01", "starter": "# Sua primeira automa\u00e7\u00e3o\n# O navegador virtual j\u00e1 est\u00e1 pronto.\n\nfrom selenium.webdriver.common.by import By\n\ndriver.get(\"http://127.0.0.1:5000/desafio\")\n\n# 1. Encontre o campo de nome\n# 2. Digite seu nome\n# 3. Clique em Cadastrar\n\n# Dica:\n# campo = driver.find_element(By.ID, \"nome\")\n# campo.send_keys(\"Seu Nome\")\n# driver.find_element(By.ID, \"cadastrar\").click()\n", "summary": "Encontre o campo, preencha o nome e confirme a a\u00e7\u00e3o principal.", "tasks": ["Localizar o campo", "Preencher o nome", "Confirmar o cadastro"], "title": "Cadastro"}, {"description": "Agora o rob\u00f4 precisa localizar a a\u00e7\u00e3o pela busca e seguir o pr\u00f3ximo passo do processo.", "id": "mission-02", "number": "02", "starter": "# Miss\u00e3o 02 - Busca\nfrom selenium.webdriver.common.by import By\n\ndriver.get(\"http://127.0.0.1:5000/desafio\")\n\n# 1. Acesse a \u00e1rea de busca\n# 2. Localize o campo de pesquisa\n# 3. Digite uma palavra-chave\n# 4. Clique para confirmar\n", "summary": "Explique o objetivo e encontre o elemento certo para continuar a jornada.", "tasks": ["Pesquisar o alvo", "Selecionar o item correto", "Confirmar a resposta"], "title": "Busca"}, {"description": "A \u00faltima etapa trabalha com ordem, valida\u00e7\u00e3o e continuidade do processo.", "id": "mission-03", "number": "03", "starter": "# Miss\u00e3o 03 - Fluxo\nfrom selenium.webdriver.common.by import By\n\ndriver.get(\"http://127.0.0.1:5000/desafio\")\n\n# 1. Avalie o que aparece na tela\n# 2. Identifique cada campo em ordem\n# 3. Complete os passos em sequ\u00eancia\n# 4. Finalize a a\u00e7\u00e3o com seguran\u00e7a\n", "summary": "Combine passos em sequ\u00eancia para concluir um fluxo completo e est\u00e1vel.", "tasks": ["Achar o primeiro passo", "Executar sequ\u00eancia", "Validar o resultado final"], "title": "Fluxo"}];
+  </script>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

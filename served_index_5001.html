@@ -1,0 +1,212 @@
+﻿<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Pequenos Talentos</title>
+  <link rel="stylesheet" href="/static/css/style.css?v=1787926566">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/loader.min.js"></script>
+</head>
+<body>
+  <div class="page-bg"></div>
+
+  <header class="topbar">
+    <div class="brand" aria-label="Pequenos Talentos">
+      <div class="brand-mark"><span class="brand-mark__core"></span></div>
+      <div class="brand-text">
+        <strong>Pequenos Talentos</strong>
+        <span>Laboratório de fases</span>
+      </div>
+    </div>
+
+    <nav class="main-nav" aria-label="Menu principal">
+      <a href="#inicio">Início</a>
+      <a href="#fases">Fases</a>
+      <a href="#laboratorio">Laboratório</a>
+      <a href="#progresso">Progresso</a>
+    </nav>
+
+    <div class="top-actions">
+      <span class="pill"><i></i> Modo local</span>
+    </div>
+  </header>
+
+  <main class="page-shell">
+    <section class="hero-card" id="inicio">
+      <div class="hero-copy">
+        <p class="eyebrow">Jornada de automação</p>
+        <h1>Aprenda a automatizar fazendo missões reais.</h1>
+        <p class="lead">
+          Cada fase do jogo apresenta um problema prático, com objetivo visível e passos claros.
+          Você começa na primeira missão e vai liberando o fluxo conforme entende a lógica.
+        </p>
+
+        <div class="hero-actions">
+          <a class="cta-button" href="#laboratorio">Entrar no laboratório</a>
+          <a class="secondary-button" href="#fases">Ver fases</a>
+        </div>
+
+        <div class="hero-stats">
+          <div>
+            <strong>4</strong>
+            <span>Fases</span>
+          </div>
+          <div>
+            <strong>01</strong>
+            <span>Ativa</span>
+          </div>
+          <div>
+            <strong>15m</strong>
+            <span>Tempo</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-panel" aria-hidden="true">
+        <div class="panel-glow"></div>
+        <div class="mission-window">
+          <div class="window-header">
+            <span class="window-dot dot-a"></span>
+            <span class="window-dot dot-b"></span>
+            <span class="window-dot dot-c"></span>
+          </div>
+
+          <div class="window-body">
+            <img id="missionPreview" alt="Preview" style="display:none;width:100%;border-radius:8px;margin-bottom:12px;border:1px solid rgba(0,0,0,0.06);" />
+            <div style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">
+              <span class="game-label" id="currentMissionTag">MISSÃO 01</span>
+              <a id="missionLink" class="secondary-button" href="/desafio?mission_id=mission-01" target="_blank">Abrir desafio</a>
+            </div>
+            <h2 id="currentMissionTitle">Cadastro</h2>
+            <p id="currentMissionSummary">Encontre o campo, preencha o nome e confirme a ação principal.</p>
+
+            <div class="progress-block">
+              <div class="progress-meta">
+                <span>Progresso</span>
+                <strong id="currentMissionProgress">32%</strong>
+              </div>
+              <div class="progress-bar">
+                <span id="currentMissionBar"></span>
+              </div>
+            </div>
+
+            <ul class="task-list" id="currentMissionTasks">
+              <li class="done">Localizar o campo</li>
+              <li class="done">Preencher o nome</li>
+              <li>Confirmar a ação</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="phase-strip" id="fases">
+      
+      <button class="phase-card phase-card--active" type="button" data-mission-id="mission-01">
+        <span class="phase-step">Fase 01</span>
+        <h3>Cadastro</h3>
+        <p>Preencha um campo simples e confirme o cadastro inicial.</p>
+      </button>
+      
+      <button class="phase-card " type="button" data-mission-id="mission-02">
+        <span class="phase-step">Fase 02</span>
+        <h3>Contato</h3>
+        <p>Escolha a opção correta em um select para seguir o fluxo.</p>
+      </button>
+      
+      <button class="phase-card " type="button" data-mission-id="mission-03">
+        <span class="phase-step">Fase 03</span>
+        <h3>Preferências</h3>
+        <p>Combine checkboxes e radios para personalizar a experiência.</p>
+      </button>
+      
+      <button class="phase-card " type="button" data-mission-id="mission-04">
+        <span class="phase-step">Fase 04</span>
+        <h3>Cadastro completo</h3>
+        <p>Monte um formulário completo com select, checkbox, rádio e observações.</p>
+      </button>
+      
+    </section>
+
+    <section class="workspace" id="laboratorio">
+      <div class="panel editor-panel">
+        <div class="panel-head">
+          <div class="panel-title-wrap">
+            <span class="dot python"></span>
+            <b>Editor de código</b>
+          </div>
+          <span class="hint">Python + Selenium</span>
+        </div>
+
+        <div id="editor"></div>
+
+        <div class="editor-foot">
+          <span>Use find_element, send_keys e click.</span>
+          <button class="run" id="run" type="button">Executar</button>
+        </div>
+      </div>
+
+      <div class="panel browser-panel">
+        <div class="panel-head">
+          <div class="panel-title-wrap">
+            <span class="dot browser"></span>
+            <b>Janela do robô</b>
+          </div>
+          <span id="status" class="status idle">Pronto</span>
+        </div>
+
+        <div class="browser-shell">
+          <div class="browser-bar">
+            <span class="traffic"><i></i><i></i><i></i></span>
+            <span class="address">lab.local / desafio</span>
+          </div>
+
+          <div class="screen-wrap">
+            <img id="screen" alt="Tela do robô">
+            <div id="screenEmpty" class="screen-empty">
+              <div class="bigbot">R</div>
+              <b>O robô aparece aqui</b>
+              <span>Execute o código para iniciar.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="console">
+          <div class="console-title">Console</div>
+          <pre id="logs">Aguardando a primeira automação.</pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="progress-panel" id="progresso">
+      <div class="progress-copy">
+        <p class="eyebrow">Progresso</p>
+        <h2>Estratégia em etapas</h2>
+      </div>
+
+      <div class="progress-steps">
+        
+        <div class="step-item active"><span>01</span><strong>Cadastro</strong></div>
+        
+        <div class="step-item "><span>02</span><strong>Contato</strong></div>
+        
+        <div class="step-item "><span>03</span><strong>Preferênci</strong></div>
+        
+        <div class="step-item "><span>04</span><strong>Cadastro c</strong></div>
+        
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span>Pequenos Talentos</span>
+    <strong>Aprender fazendo</strong>
+  </footer>
+
+  <script>
+    window.STARTER = "# Miss\u00e3o 01 - Cadastro inicial\n# O navegador virtual j\u00e1 est\u00e1 pronto.\n\nfrom selenium.webdriver.common.by import By\n\ndriver.get(\"http://127.0.0.1:5000/desafio?mission_id=mission-01\")\n\n# 1. Encontre o campo de nome\n# 2. Digite seu nome\n# 3. Clique em Cadastrar\n\n# Dica:\n# campo = driver.find_element(By.ID, \"nome\")\n# campo.send_keys(\"Seu Nome\")\n# driver.find_element(By.ID, \"cadastrar\").click()\n";
+    window.MISSION_STARTERS = [{"description": "Primeiro contato com o desafio: identificar o campo e validar o fluxo de cadastro.", "difficulty": 1, "id": "mission-01", "number": "01", "starter": "# Miss\u00e3o 01 - Cadastro inicial\n# O navegador virtual j\u00e1 est\u00e1 pronto.\n\nfrom selenium.webdriver.common.by import By\n\ndriver.get(\"http://127.0.0.1:5000/desafio?mission_id=mission-01\")\n\n# 1. Encontre o campo de nome\n# 2. Digite seu nome\n# 3. Clique em Cadastrar\n\n# Dica:\n# campo = driver.find_element(By.ID, \"nome\")\n# campo.send_keys(\"Seu Nome\")\n# driver.find_element(By.ID, \"cadastrar\").click()\n", "summary": "Preencha um campo simples e confirme o cadastro inicial.", "tasks": ["Localizar o campo", "Preencher o nome", "Confirmar o cadastro"], "title": "Cadastro"}, {"description": "Agora o rob\u00f4 precisa entender um formul\u00e1rio com sele\u00e7\u00e3o de canais e seguir para a pr\u00f3xima etapa.", "difficulty": 2, "id": "mission-02", "number": "02", "starter": "# Miss\u00e3o 02 - Sele\u00e7\u00e3o de canal\nfrom selenium.webdriver.common.by import By\nfrom selenium.webdriver.support.ui import Select\n\ndriver.get(\"http://127.0.0.1:5000/desafio?mission_id=mission-02\")\n\n# 1. Localize o select de canal\n# 2. Escolha \"email\"\n# 3. Clique em continuar\n# Dica:\n# select = Select(driver.find_element(By.ID, \"canal\"))\n# select.select_by_value(\"email\")\n# driver.find_element(By.ID, \"continuar\").click()\n", "summary": "Escolha a op\u00e7\u00e3o correta em um select para seguir o fluxo.", "tasks": ["Abrir o menu de canais", "Selecionar a op\u00e7\u00e3o certa", "Continuar no formul\u00e1rio"], "title": "Contato"}, {"description": "A terceira fase usa m\u00faltiplos campos e exige mais aten\u00e7\u00e3o ao combinar respostas.", "difficulty": 3, "id": "mission-03", "number": "03", "starter": "# Miss\u00e3o 03 - Prefer\u00eancias\nfrom selenium.webdriver.common.by import By\n\ndriver.get(\"http://127.0.0.1:5000/desafio?mission_id=mission-03\")\n\n# 1. Marque a op\u00e7\u00e3o de notifica\u00e7\u00f5es\n# 2. Selecione o perfil \"profissional\"\n# 3. Clique em salvar prefer\u00eancias\n# Dica:\n# driver.find_element(By.ID, \"notificacoes\").click()\n# driver.find_element(By.ID, \"perfil-profissional\").click()\n# driver.find_element(By.ID, \"salvar-preferencias\").click()\n", "summary": "Combine checkboxes e radios para personalizar a experi\u00eancia.", "tasks": ["Marcar op\u00e7\u00f5es relevantes", "Escolher perfil", "Salvar prefer\u00eancias"], "title": "Prefer\u00eancias"}, {"description": "A miss\u00e3o final re\u00fane todos os elementos de um formul\u00e1rio real: sele\u00e7\u00e3o, op\u00e7\u00f5es, al\u00e9m de texto livre para concluir a jornada.", "difficulty": 4, "id": "mission-04", "number": "04", "starter": "# Miss\u00e3o 04 - Cadastro completo\nfrom selenium.webdriver.common.by import By\nfrom selenium.webdriver.support.ui import Select\n\ndriver.get(\"http://127.0.0.1:5000/desafio?mission_id=mission-04\")\n\n# 1. Selecione o setor \"tecnologia\"\n# 2. Marque \"relat\u00f3rios\" e \"automacao\"\n# 3. Escolha a prioridade \"alta\"\n# 4. Escreva uma observa\u00e7\u00e3o\n# 5. Clique em concluir cadastro\n# Dica:\n# Select(driver.find_element(By.ID, \"setor\")).select_by_value(\"tecnologia\")\n# driver.find_element(By.ID, \"relatorios\").click()\n# driver.find_element(By.ID, \"prioridade-alta\").click()\n# driver.find_element(By.ID, \"observacoes\").send_keys(\"Tudo ok\")\n# driver.find_element(By.ID, \"concluir\").click()\n", "summary": "Monte um formul\u00e1rio completo com select, checkbox, r\u00e1dio e observa\u00e7\u00f5es.", "tasks": ["Escolher setor", "Ativar funcionalidades", "Definir prioridade", "Enviar formul\u00e1rio"], "title": "Cadastro completo"}];
+  </script>
+  <script src="/static/js/app.js?v=1787926566"></script>
+</body>
+</html>

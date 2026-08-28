@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Pequenos Talentos</title>
+  <link rel="stylesheet" href="/static/css/style.css?v={{ static_version }}">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/loader.min.js"></script>
+</head>
+<body>
+  <div class="page-bg"></div>
+
+  <header class="topbar">
+    <div class="brand" aria-label="Pequenos Talentos">
+      <div class="brand-mark"><span class="brand-mark__core"></span></div>
+      <div class="brand-text">
+        <strong>Pequenos Talentos</strong>
+        <span>Laboratório de fases</span>
+      </div>
+    </div>
+
+    <nav class="main-nav" aria-label="Menu principal">
+      <a href="#inicio">Início</a>
+      <a href="#fases">Fases</a>
+      <a href="#laboratorio">Laboratório</a>
+      <a href="#progresso">Progresso</a>
+    </nav>
+
+    <div class="top-actions">
+      <span class="pill"><i></i> Modo local</span>
+    </div>
+  </header>
+
+  <main class="page-shell">
+    <section class="hero-card" id="inicio">
+      <div class="hero-copy">
+        <p class="eyebrow">Jornada de automação</p>
+        <h1>Aprenda a automatizar fazendo missões reais.</h1>
+        <p class="lead">
+          Cada fase do jogo apresenta um problema prático, com objetivo visível e passos claros.
+          Você começa na primeira missão e vai liberando o fluxo conforme entende a lógica.
+        </p>
+
+        <div class="hero-actions">
+          <a class="cta-button" href="#laboratorio">Entrar no laboratório</a>
+          <a class="secondary-button" href="#fases">Ver fases</a>
+        </div>
+
+        <div class="hero-stats">
+          <div>
+            <strong>{{ missions|length }}</strong>
+            <span>Fases</span>
+          </div>
+          <div>
+            <strong>{{ missions[0].number if missions else '01' }}</strong>
+            <span>Ativa</span>
+          </div>
+          <div>
+            <strong>15m</strong>
+            <span>Tempo</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-panel" aria-hidden="true">
+        <div class="panel-glow"></div>
+        <div class="mission-window">
+          <div class="window-header">
+            <span class="window-dot dot-a"></span>
+            <span class="window-dot dot-b"></span>
+            <span class="window-dot dot-c"></span>
+          </div>
+
+          <div class="window-body">
+            <img id="missionPreview" alt="Preview" style="display:none;width:100%;border-radius:8px;margin-bottom:12px;border:1px solid rgba(0,0,0,0.06);" />
+            <div style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">
+              <span class="game-label" id="currentMissionTag">MISSÃO 01</span>
+              <a id="missionLink" class="secondary-button" href="/desafio?mission_id=mission-01" target="_blank">Abrir desafio</a>
+            </div>
+            <h2 id="currentMissionTitle">Cadastro</h2>
+            <p id="currentMissionSummary">Encontre o campo, preencha o nome e confirme a ação principal.</p>
+
+            <div class="progress-block">
+              <div class="progress-meta">
+                <span>Progresso</span>
+                <strong id="currentMissionProgress">32%</strong>
+              </div>
+              <div class="progress-bar">
+                <span id="currentMissionBar"></span>
+              </div>
+            </div>
+
+            <ul class="task-list" id="currentMissionTasks">
+              <li class="done">Localizar o campo</li>
+              <li class="done">Preencher o nome</li>
+              <li>Confirmar a ação</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="phase-strip" id="fases">
+      {% for mission in missions %}
+      <button class="phase-card {% if loop.first %}phase-card--active{% endif %}" type="button" data-mission-id="{{ mission.id }}">
+        <span class="phase-step">Fase {{ mission.number }}</span>
+        <h3>{{ mission.title }}</h3>
+        <p>{{ mission.summary }}</p>
+      </button>
+      {% endfor %}
+    </section>
+
+    <section class="workspace" id="laboratorio">
+      <div class="panel editor-panel">
+        <div class="panel-head">
+          <div class="panel-title-wrap">
+            <span class="dot python"></span>
+            <b>Editor de código</b>
+          </div>
+          <span class="hint">Python + Selenium</span>
+        </div>
+
+        <div id="editor"></div>
+
+        <div class="editor-foot">
+          <span>Use find_element, send_keys e click.</span>
+          <button class="run" id="run" type="button">Executar</button>
+        </div>
+      </div>
+
+      <div class="panel browser-panel">
+        <div class="panel-head">
+          <div class="panel-title-wrap">
+            <span class="dot browser"></span>
+            <b>Janela do robô</b>
+          </div>
+          <span id="status" class="status idle">Pronto</span>
+        </div>
+
+        <div class="browser-shell">
+          <div class="browser-bar">
+            <span class="traffic"><i></i><i></i><i></i></span>
+            <span class="address">lab.local / desafio</span>
+          </div>
+
+          <div class="screen-wrap">
+            <img id="screen" alt="Tela do robô">
+            <div id="screenEmpty" class="screen-empty">
+              <div class="bigbot">R</div>
+              <b>O robô aparece aqui</b>
+              <span>Execute o código para iniciar.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="console">
+          <div class="console-title">Console</div>
+          <pre id="logs">Aguardando a primeira automação.</pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="progress-panel" id="progresso">
+      <div class="progress-copy">
+        <p class="eyebrow">Progresso</p>
+        <h2>Estratégia em etapas</h2>
+      </div>
+
+      <div class="progress-steps">
+        {% for m in missions %}
+        <div class="step-item {% if loop.first %}active{% endif %}"><span>{{ m.number }}</span><strong>{{ m.title[:10] }}</strong></div>
+        {% endfor %}
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span>Pequenos Talentos</span>
+    <strong>Aprender fazendo</strong>
+  </footer>
+
+  <script>
+    window.STARTER = {{ starter|tojson }};
+    window.MISSION_STARTERS = {{ missions|tojson }};
+  </script>
+  <script src="/static/js/app.js?v={{ static_version }}"></script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+services:
+  web:
+    build: .
+    environment:
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-change-me}
+      RUNNER_TOKEN: ${RUNNER_TOKEN:-dev-runner-token}
+      RUNNER_URL: http://runner:7000
+      MAX_SESSIONS: ${MAX_SESSIONS:-30}
+      JOB_TTL: ${JOB_TTL:-900}
+      MAX_CODE_CHARS: ${MAX_CODE_CHARS:-8000}
+    ports:
+      - "8080:5000"
+    depends_on:
+      - runner
+    networks: [rpa]
+    restart: unless-stopped
+
+  runner:
+    build: ./runner
+    environment:
+      RUNNER_TOKEN: ${RUNNER_TOKEN:-dev-runner-token}
+      MAX_SESSIONS: ${MAX_SESSIONS:-30}
+      JOB_TTL: ${JOB_TTL:-900}
+      JOB_CPU: ${JOB_CPU:-0.75}
+      JOB_MEMORY: ${JOB_MEMORY:-512m}
+      JOB_IMAGE: rpa-job:latest
+      NETWORK: rpa_lab_network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks: [rpa]
+    restart: unless-stopped
+
+networks:
+  rpa:
+    name: rpa_lab_network
