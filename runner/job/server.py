@@ -27,10 +27,12 @@ def validate(code):
  tree=ast.parse(code)
  banned=(ast.With,ast.AsyncWith,ast.Try,ast.Lambda,ast.ClassDef,ast.FunctionDef,ast.AsyncFunctionDef)
  for n in ast.walk(tree):
-  if isinstance(n,(ast.Import,ast.ImportFrom)):
-   names=[a.name for a in n.names]
-   for x in names:
-    if x.split('.')[0] not in ALLOWED_IMPORTS: raise ValueError(f'Importação não permitida: {x}')
+  if isinstance(n,ast.Import):
+   for a in n.names:
+    if a.name.split('.')[0] not in ALLOWED_IMPORTS: raise ValueError(f'Importação não permitida: {a.name}')
+  if isinstance(n,ast.ImportFrom):
+   root=(n.module or '').split('.')[0]
+   if root not in ALLOWED_IMPORTS: raise ValueError(f'Importação não permitida: {n.module}')
   if isinstance(n,banned):raise ValueError('Esta construção ainda não faz parte deste desafio.')
   if isinstance(n,ast.Call) and isinstance(n.func,ast.Name) and n.func.id in {'open','exec','eval','compile','input','breakpoint','__import__'}:raise ValueError(f'Comando não permitido: {n.func.id}')
   if isinstance(n,ast.Attribute) and n.attr in {'system','popen','remove','unlink','rmtree','walk','listdir'}:raise ValueError('Acesso ao sistema de arquivos não permitido.')
